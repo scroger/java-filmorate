@@ -10,9 +10,9 @@ import jakarta.validation.Payload;
 
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = MaxDateValidator.class)
-public @interface MaxDate {
-    String message() default "Release date should be before maxDate";
+@Constraint(validatedBy = MinDateValidator.class)
+public @interface MinDate {
+    String message() default "Release date should be after minDate";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
     String value();
