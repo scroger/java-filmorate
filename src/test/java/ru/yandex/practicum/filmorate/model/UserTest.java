@@ -48,6 +48,11 @@ class UserTest {
         violations = validator.validate(user);
         assertFalse(violations.isEmpty());
 
+        //set invalid email
+        user.setEmail("invalid e@mail.ru");
+        violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+
         //set email
         user.setEmail("valid@mail.ru");
         violations = validator.validate(user);
@@ -62,6 +67,7 @@ class UserTest {
 
         //set required fields
         user.setEmail("valid@mail.ru");
+        assertFalse(violations.isEmpty());
 
         //set empty login
         user.setLogin("");
@@ -72,6 +78,11 @@ class UserTest {
         user.setLogin(" ");
         violations = validator.validate(user);
         assertFalse(violations.isEmpty());
+
+        //set login with spaces
+        user.setLogin("login with space");
+        violations = validator.validate(user);
+        assertTrue(violations.size() == 1);
 
         //set login
         user.setLogin("login");

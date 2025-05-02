@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,10 +24,6 @@ public class FilmController {
 
     @PostMapping
     public Film create(@RequestBody @Valid Film filmRequest) {
-        if (null != filmRequest.getReleaseDate() && filmRequest.getReleaseDate().isBefore(LocalDate.of(1895, 2, 28))) {
-            throw new ValidationException("Release date should be before 1895-02-28");
-        }
-
         Long id = generateId();
 
         filmRequest.setId(id);

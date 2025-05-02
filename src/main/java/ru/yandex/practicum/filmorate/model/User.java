@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.validation.NoSpace;
 
 import java.time.LocalDate;
 
@@ -26,6 +27,7 @@ public class User {
     private String email;
 
     @NotBlank
+    @NoSpace
     private String login;
 
     private String name;

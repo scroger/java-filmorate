@@ -24,7 +24,9 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody @Valid User userRequest) {
-        validate(userRequest);
+        if (null == userRequest.getName() || userRequest.getName().isBlank()) {
+            userRequest.setName(userRequest.getLogin());
+        }
 
         Long id = generateId();
         userRequest.setId(id);
@@ -43,7 +45,9 @@ public class UserController {
         if (!users.containsKey(userRequest.getId())) {
             throw new ValidationException(String.format("User with id=%d not found", userRequest.getId()));
         }
-        validate(userRequest);
+        if (null == userRequest.getName() || userRequest.getName().isBlank()) {
+            userRequest.setName(userRequest.getLogin());
+        }
 
         User updateUser = users.get(userRequest.getId());
         if (!updateUser.getEmail().equals(userRequest.getEmail())) {
@@ -57,16 +61,6 @@ public class UserController {
         log.info("User successfully updated");
 
         return userRequest;
-    }
-
-    private void validate(User user) {
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException("Login should not contain spaces");
-        }
-
-        if (null == user.getName() || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
     }
 
     private void checkEmailUnique(String email) {

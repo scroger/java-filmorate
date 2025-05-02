@@ -63,6 +63,11 @@ class FilmTest {
         //set release date
         film.setReleaseDate(LocalDate.now());
         violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+
+        //set release date before 1895-02-28
+        film.setReleaseDate(LocalDate.of(1894, 2, 27));
+        violations = validator.validate(film);
         assertTrue(violations.isEmpty());
 
         //set negative duration

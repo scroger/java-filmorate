@@ -10,19 +10,6 @@ class UserControllerTest {
     private final UserController controller = new UserController();
 
     @Test
-    void testCreateUserWithInvalidLogin() {
-        User userRequest = new User();
-        userRequest.setEmail("valid@mail.ru");
-        userRequest.setLogin("invalid login");
-
-        Assertions.assertThrows(
-                ValidationException.class,
-                () -> controller.create(userRequest),
-                "Login should not contain spaces"
-        );
-    }
-
-    @Test
     void testCreateUserWithoutName() {
         User userRequest = new User();
         userRequest.setEmail("valid@mail.ru");

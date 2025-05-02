@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.validation.MaxDate;
 
 import java.time.LocalDate;
 
@@ -30,6 +31,7 @@ public class Film {
 
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonSerialize(using = LocalDateSerializer.class)
+    @MaxDate(value = "1895-02-28", message = "Release date should be before 1895-02-28")
     private LocalDate releaseDate;
 
     @Positive
