@@ -36,4 +36,7 @@ public class Film {
 
     @Positive
     private Long duration;
+
+    @Positive
+    private Integer likes;
 }
