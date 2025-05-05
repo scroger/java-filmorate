@@ -33,7 +33,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilm(@PathVariable @Valid @Positive Long id) {
+    public Film getFilm(@PathVariable("id") @Valid @Positive Long id) {
         return filmService.findById(id);
     }
 
@@ -47,23 +47,20 @@ public class FilmController {
         return filmService.update(filmRequest);
     }
 
-    //PUT /films/{id}/like/{userId}
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable @Valid @Positive Long id,
-                        @PathVariable @Valid @Positive Long userId) {
+    public void addLike(@PathVariable("id") @Valid @Positive Long id,
+                        @PathVariable("userId") @Valid @Positive Long userId) {
         filmService.addLike(id, userId);
     }
 
-    //DELETE /films/{id}/like/{userId}
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable @Valid @Positive Long id,
-                           @PathVariable @Valid @Positive Long userId) {
+    public void removeLike(@PathVariable("id") @Valid @Positive Long id,
+                           @PathVariable("userId") @Valid @Positive Long userId) {
         filmService.removeLike(id, userId);
     }
 
-    //GET /films/popular?count={count}
-    @GetMapping("/popular?count={count}")
-    public Collection<Film> findTop(@RequestParam @Valid @Positive Integer count) {
+    @GetMapping("/popular")
+    public Collection<Film> findTop(@RequestParam(name = "count", required = false, defaultValue = "10") @Valid @Positive Integer count) {
         return filmService.findTop(count);
     }
 

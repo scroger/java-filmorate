@@ -47,25 +47,25 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getFriends(@PathVariable @Valid @Positive Long id) {
+    public Collection<User> getFriends(@PathVariable("id") @Valid @Positive Long id) {
         return userService.findFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable @Valid @Positive Long userId,
-                                             @PathVariable @Valid @Positive Long otherId) {
+    public Collection<User> getCommonFriends(@PathVariable("id") @Valid @Positive Long userId,
+                                             @PathVariable("otherId") @Valid @Positive Long otherId) {
         return userService.findCommonFriends(userId, otherId);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable @Valid @Positive Long id,
-                          @PathVariable @Valid @Positive Long friendId) {
+    public void addFriend(@PathVariable("id") @Valid @Positive Long id,
+                          @PathVariable("friendId") @Valid @Positive Long friendId) {
         userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void removeFriend(@PathVariable @Valid @Positive Long id,
-                             @PathVariable @Valid @Positive Long friendId) {
+    public void removeFriend(@PathVariable("id") @Valid @Positive Long id,
+                             @PathVariable("friendId") @Valid @Positive Long friendId) {
         userService.removeFriend(id, friendId);
     }
 

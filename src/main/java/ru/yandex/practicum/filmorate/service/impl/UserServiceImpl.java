@@ -82,14 +82,14 @@ public class UserServiceImpl implements UserService {
     public void addFriend(Long id, Long friendId) {
         userStorage.addFriend(id, friendId);
 
-        log.info(String.format("Users with id=%d and id=%d are now friends.", id, friendId));
+        log.info("Users with id={} and id={} are now friends.", id, friendId);
     }
 
     @Override
     public void removeFriend(Long id, Long friendId) {
         userStorage.removeFriend(id, friendId);
 
-        log.info(String.format("Users with id=%d and id=%d are no longer friends.", id, friendId));
+        log.info("Users with id={} and id={} are no longer friends.", id, friendId);
     }
 
     private long generateId() {

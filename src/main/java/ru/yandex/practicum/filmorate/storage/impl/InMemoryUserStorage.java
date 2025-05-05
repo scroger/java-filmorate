@@ -89,10 +89,9 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void removeFriend(Long id, Long friendId) {
         final User user1 = findById(id);
+        final User user2 = findById(friendId);
 
         if (user1.getFriendIds().contains(friendId)) {
-            final User user2 = findById(friendId);
-
             user1.getFriendIds().remove(user2.getId());
             user2.getFriendIds().remove(user1.getId());
         }

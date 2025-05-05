@@ -1,16 +1,15 @@
 package ru.yandex.practicum.filmorate.service.impl;
 
-import java.util.Collection;
-
-import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+
+import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +17,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 public class FilmServiceImpl implements FilmService {
 
     private final FilmStorage filmStorage;
+    private final UserService userService;
 
     @Override
     public Collection<Film> findAll() {
@@ -26,8 +26,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film findById(Long id) {
-        return filmStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("User with id=%d not found", id)));
+        return filmStorage.findById(id);
     }
 
     @Override
@@ -48,9 +47,8 @@ public class FilmServiceImpl implements FilmService {
             throw new ValidationException("Id should be specified");
         }
 
-        if (filmStorage.findById(filmRequest.getId()).isEmpty()) {
-            throw new NotFoundException(String.format("Film with id=%d not found", filmRequest.getId()));
-        }
+        Film film = filmStorage.findById(filmRequest.getId());
+        filmRequest.setLikes(film.getLikes());
 
         filmStorage.save(filmRequest);
         log.info("Film successfully updated");
@@ -60,17 +58,30 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public void addLike(Long id, Long userId) {
+        Film film = findById(id);
+        userService.findById(userId);
 
+        film.setLikes(film.getLikes() + 1);
+        filmStorage.save(film);
+        log.info("User with id={} liked film with id={}", userId, id);
     }
 
     @Override
     public void removeLike(Long id, Long userId) {
+        Film film = findById(id);
+        userService.findById(userId);
 
+        if (film.getLikes() > 0) {
+            film.setLikes(film.getLikes() - 1);
+
+            filmStorage.save(film);
+            log.info("User with id={} unliked film with id={}", userId, id);
+        }
     }
 
     @Override
     public Collection<Film> findTop(Integer count) {
-        return null;
+        return filmStorage.findTop(count);
     }
 
     private long generateId() {
