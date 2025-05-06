@@ -2,12 +2,20 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.impl.UserServiceImpl;
+import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
 
 class UserControllerTest {
 
-    private final UserController controller = new UserController();
+    private final UserController controller = new UserController(
+            new UserServiceImpl(
+                    new InMemoryUserStorage()
+            )
+    );
 
     @Test
     void testCreateUserWithoutName() {
@@ -15,7 +23,7 @@ class UserControllerTest {
         userRequest.setEmail("valid@mail.ru");
         userRequest.setLogin("login");
 
-        User createdUser = Assertions.assertDoesNotThrow(() -> controller.create(userRequest));
+        User createdUser = Assertions.assertDoesNotThrow(() -> controller.createUser(userRequest));
         Assertions.assertEquals(userRequest.getLogin(), createdUser.getName());
     }
 
@@ -27,7 +35,7 @@ class UserControllerTest {
 
         Assertions.assertThrows(
                 ValidationException.class,
-                () -> controller.update(userRequest),
+                () -> controller.updateUser(userRequest),
                 "Id should be specified"
         );
     }
@@ -40,8 +48,8 @@ class UserControllerTest {
         userRequest.setLogin("login");
 
         Assertions.assertThrows(
-                ValidationException.class,
-                () -> controller.update(userRequest),
+                NotFoundException.class,
+                () -> controller.updateUser(userRequest),
                 "User with id=1 not found"
         );
     }
@@ -52,11 +60,11 @@ class UserControllerTest {
         userRequest.setEmail("valid@mail.ru");
         userRequest.setLogin("login");
 
-        User createdUser = controller.create(userRequest);
+        User createdUser = controller.createUser(userRequest);
         Assertions.assertEquals(1L, createdUser.getId());
         Assertions.assertEquals(userRequest.getEmail(), createdUser.getEmail());
 
-        User updatedUser = Assertions.assertDoesNotThrow(() -> controller.update(new User(
+        User updatedUser = Assertions.assertDoesNotThrow(() -> controller.updateUser(new User(
                 createdUser.getId(),
                 "login@mail.ru",
                 createdUser.getLogin(),
@@ -68,19 +76,19 @@ class UserControllerTest {
 
     @Test
     void testUpdateUserChangeEmailFailed() {
-        controller.create(User.builder()
+        controller.createUser(User.builder()
                 .email("login1@mail.ru")
                 .login("login1")
                 .build());
 
-        controller.create(User.builder()
+        controller.createUser(User.builder()
                 .email("login2@mail.ru")
                 .login("login2")
                 .build());
 
         Assertions.assertThrows(
                 ValidationException.class,
-                () -> controller.update(User.builder()
+                () -> controller.updateUser(User.builder()
                         .id(2L)
                         .email("login1@mail.ru")
                         .login("login2")
@@ -95,11 +103,11 @@ class UserControllerTest {
         userRequest.setEmail("valid@mail.ru");
         userRequest.setLogin("login");
 
-        User createdUser = controller.create(userRequest);
+        User createdUser = controller.createUser(userRequest);
         Assertions.assertEquals(1L, createdUser.getId());
         Assertions.assertEquals(userRequest.getLogin(), createdUser.getLogin());
 
-        User updatedUser = Assertions.assertDoesNotThrow(() -> controller.update(new User(
+        User updatedUser = Assertions.assertDoesNotThrow(() -> controller.updateUser(new User(
                 createdUser.getId(),
                 createdUser.getEmail(),
                 "newlogin",
@@ -111,19 +119,19 @@ class UserControllerTest {
 
     @Test
     void testUpdateUserChangeLoginFailed() {
-        controller.create(User.builder()
+        controller.createUser(User.builder()
                 .email("login1@mail.ru")
                 .login("login1")
                 .build());
 
-        controller.create(User.builder()
+        controller.createUser(User.builder()
                 .email("login2@mail.ru")
                 .login("login2")
                 .build());
 
         Assertions.assertThrows(
                 ValidationException.class,
-                () -> controller.update(User.builder()
+                () -> controller.updateUser(User.builder()
                         .email("login2@mail.ru")
                         .login("login1")
                         .build()),
