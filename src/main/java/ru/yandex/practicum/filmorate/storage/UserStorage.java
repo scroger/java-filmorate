@@ -10,30 +10,24 @@ public interface UserStorage {
 
     Collection<User> findAll();
 
-    Optional<User> findById(Long id);
-
-    void save(User user);
+    User findById(Long id);
 
     User create(User user);
 
     User update(User user);
 
-    void checkEmailUnique(String email);
+    boolean checkEmailUnique(String email);
 
-    void checkLoginUnique(String login);
+    boolean checkLoginUnique(String login);
 
     Collection<User> findFriends(Long id);
 
     Collection<User> findCommonFriends(Long userId, Long otherId);
 
-//    void addFriend(Long id, Long friendId);
+    void addFriend(Long id, Long friendId);
 
-//    void removeFriend(Long id, Long friendId);
+    void removeFriend(Long id, Long friendId);
 
-    void addFriend(User user, User friend, boolean status);
-
-    void removeFriend(User user, User friend);
-
-    void acceptFriendship(User user, User friend, boolean status);
+    void acceptFriendship(Long userId, Long friendId);
 
 }

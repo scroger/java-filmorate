@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -23,6 +24,7 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+@Primary
 @Repository("filmDbStorage")
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
@@ -105,6 +107,7 @@ public class FilmDbStorage implements FilmStorage {
         }, keyHolder);
 
         film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+
         if (null != film.getGenres()) {
             jdbcTemplate.batchUpdate(
                     ADD_GENRE_SQL,
