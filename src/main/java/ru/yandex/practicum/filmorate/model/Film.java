@@ -9,11 +9,14 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validation.MinDate;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Film.
@@ -21,6 +24,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 public class Film {
     private Long id;
 
@@ -40,4 +44,8 @@ public class Film {
 
     @PositiveOrZero
     private int likes;
+
+    private MpaRating mpaRating;
+
+    private Collection<Genre> genres;
 }
