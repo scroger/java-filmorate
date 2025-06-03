@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
-import java.util.Collection;
+import ru.yandex.practicum.filmorate.dto.MpaRatingDTO;
 
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import java.util.Collection;
 
 public interface MpaRatingService {
 
-    Collection<MpaRating> findAll();
+    Collection<MpaRatingDTO> findAll();
 
-    MpaRating findById(Integer id);
+    MpaRatingDTO findById(Integer id);
 
 }

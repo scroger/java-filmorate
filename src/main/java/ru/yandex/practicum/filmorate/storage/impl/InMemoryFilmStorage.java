@@ -19,12 +19,15 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> findById(Long id) {
-        return Optional.ofNullable(films.get(id));
+    public Film findById(Long id) {
+        return Optional.ofNullable(films.get(id))
+                .orElseThrow(() -> new NotFoundException(String.format("Film with id=%d not found.", id)));
     }
 
     @Override
     public Film create(Film film) {
+        film.setId(generateId());
+
         return save(film);
     }
 
@@ -67,4 +70,15 @@ public class InMemoryFilmStorage implements FilmStorage {
 
         return false;
     }
+
+    private long generateId() {
+        long maxId = findAll()
+                .stream()
+                .mapToLong(Film::getId)
+                .max()
+                .orElse(0);
+
+        return ++maxId;
+    }
+
 }

@@ -1,14 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,20 +8,25 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-
-import lombok.RequiredArgsConstructor;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.*;
+
 @Primary
 @Repository("filmDbStorage")
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
 
-    private final static String FIND_ALL_SQL = """
+    private static final String FIND_ALL_SQL = """
             SELECT
                 f.id,
                 f.name,
@@ -46,27 +43,27 @@ public class FilmDbStorage implements FilmStorage {
             LEFT JOIN genres g ON fg.genre_id = g.id
             LEFT JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id""";
 
-    private final static String FIND_BY_ID_SQL = FIND_ALL_SQL + " WHERE f.id=?";
+    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + " WHERE f.id=?";
 
-    private final static String FIND_TOP_SQL = FIND_ALL_SQL + " ORDER BY likes DESC LIMIT ?";
+    private static final String FIND_TOP_SQL = FIND_ALL_SQL + " ORDER BY likes DESC LIMIT ?";
 
-    private final static String CREATE_SQL = """
+    private static final String CREATE_SQL = """
             INSERT INTO films (name, description, release_date, duration, mpa_rating_id) VALUES (?, ?, ?, ?, ?)""";
 
-    private final static String UPDATE_SQL = """
+    private static final String UPDATE_SQL = """
             UPDATE films SET name=?, description=?, release_date=?, duration=?, mpa_rating_id=? WHERE id=?""";
 
-    private final static String ADD_GENRE_SQL = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
+    private static final String ADD_GENRE_SQL = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
 
-    private final static String REMOVE_GENRES_SQL = "DELETE FROM film_genres WHERE film_id=?";
+    private static final String REMOVE_GENRES_SQL = "DELETE FROM film_genres WHERE film_id=?";
 
-    private final static String ADD_LIKE_SQL = "INSERT INTO film_likes (film_id, user_id) VALUES  (?, ?)";
+    private static final String ADD_LIKE_SQL = "INSERT INTO film_likes (film_id, user_id) VALUES  (?, ?)";
 
-    private final static String LIKES_COUNT_SQL = "SELECT count(film_id) FROM film_likes WHERE film_id=? AND user_id=?";
+    private static final String LIKES_COUNT_SQL = "SELECT count(film_id) FROM film_likes WHERE film_id=? AND user_id=?";
 
-    private final static String REMOVE_LIKE_SQL = "DELETE FROM film_likes WHERE film_id=? AND user_id=?";
+    private static final String REMOVE_LIKE_SQL = "DELETE FROM film_likes WHERE film_id=? AND user_id=?";
 
-    private final static String DELETE_SQL = "DELETE FROM films WHERE id=?";
+    private static final String DELETE_SQL = "DELETE FROM films WHERE id=?";
 
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<Film> filmRowMapper;
@@ -78,12 +75,15 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> findById(Long id) {
+    public Film findById(Long id) {
+        Optional<Film> optFilm;
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(FIND_BY_ID_SQL, filmRowMapper, id));
+            optFilm = Optional.ofNullable(jdbcTemplate.queryForObject(FIND_BY_ID_SQL, filmRowMapper, id));
         } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
+            optFilm = Optional.empty();
         }
+
+        return optFilm.orElseThrow(() -> new NotFoundException(String.format("Film with id=%d not found.", id)));
     }
 
     @Override
@@ -97,8 +97,8 @@ public class FilmDbStorage implements FilmStorage {
             stmt.setString(2, film.getDescription());
             stmt.setDate(3, Date.valueOf(film.getReleaseDate()));
             stmt.setLong(4, film.getDuration());
-            if (null != film.getMpaRating()) {
-                stmt.setLong(5, film.getMpaRating().getId());
+            if (null != film.getMpa()) {
+                stmt.setInt(5, film.getMpa().getId());
             } else {
                 stmt.setNull(5, Types.NULL);
             }
@@ -131,7 +131,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                Optional.ofNullable(film.getMpaRating()).map(MpaRating::getId).orElse(null),
+                Optional.ofNullable(film.getMpa()).map(MpaRating::getId).orElse(null),
                 film.getId()
         );
 
@@ -154,7 +154,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findTop(Integer count) {
-        return jdbcTemplate.query(FIND_TOP_SQL, ps -> ps.setInt(1, count), filmListRowMapper).getFirst();
+        return jdbcTemplate.query(FIND_TOP_SQL, ps -> ps.setInt(1, count), filmListRowMapper).getFirst().stream()
+                .sorted(Comparator.comparingInt(Film::getLikes).reversed())
+                .toList();
     }
 
     @Override

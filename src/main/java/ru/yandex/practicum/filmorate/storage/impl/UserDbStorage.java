@@ -1,12 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,33 +8,37 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-
-import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
 
 @Primary
 @Repository
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
-    private final static String FIND_ALL_SQL = "SELECT * FROM users";
-    private final static String FIND_BY_ID_SQL = FIND_ALL_SQL + " WHERE id=?";
-    private final static String CREATE_SQL = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
-    private final static String UPDATE_SQL = "UPDATE users SET email=?, login=?, name=?, birthday=? WHERE id=?";
-    private final static String FIND_FRIENDS_SQL = """
+    private static final String FIND_ALL_SQL = "SELECT * FROM users";
+    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + " WHERE id=?";
+    private static final String CREATE_SQL = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
+    private static final String UPDATE_SQL = "UPDATE users SET email=?, login=?, name=?, birthday=? WHERE id=?";
+    private static final String FIND_FRIENDS_SQL = """
             SELECT * FROM users WHERE id IN (SELECT friend_id FROM user_friends WHERE user_id=?)""";
-    private final static String FIND_COMMON_FRIENDS_SQL = """
+    private static final String FIND_COMMON_FRIENDS_SQL = """
             SELECT * FROM users WHERE id IN (
                 SELECT uf1.friend_id FROM user_friends uf1
                 LEFT JOIN user_friends uf2 ON uf1.friend_id=uf2.friend_id
                 WHERE uf1.user_id=? AND uf2.user_id=?
             )""";
-    private final static String ADD_FRIEND_SQL = "INSERT INTO user_friends (user_id, friend_id, status) VALUES (?, ?, false)";
-    private final static String REMOVE_FRIEND_SQL = "DELETE FROM user_friends WHERE user_id=? AND friend_id=?";
-    private final static String ACCEPT_FRIEND_SQL = "UPDATE user_friends SET status=true WHERE user_id=? AND friend_id=?";
-
+    private static final String ADD_FRIEND_SQL = "INSERT INTO user_friends (user_id, friend_id, status) VALUES (?, ?, false)";
+    private static final String REMOVE_FRIEND_SQL = "DELETE FROM user_friends WHERE user_id=? AND friend_id=?";
+    private static final String ACCEPT_FRIEND_SQL = "UPDATE user_friends SET status=true WHERE user_id=? AND friend_id=?";
 
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<User> userRowMapper;
@@ -59,11 +57,7 @@ public class UserDbStorage implements UserStorage {
             optUser = Optional.empty();
         }
 
-        if (optUser.isEmpty()) {
-            throw new NotFoundException(String.format("User with id=%d not found.", id));
-        }
-
-        return optUser.get();
+        return optUser.orElseThrow(() -> new NotFoundException(String.format("User with id=%d not found.", id)));
     }
 
     @Override
@@ -123,8 +117,8 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> findFriends(Long userId) {
-        return jdbcTemplate.query(FIND_FRIENDS_SQL, userRowMapper, userId);
+    public Collection<User> findFriends(User user) {
+        return jdbcTemplate.query(FIND_FRIENDS_SQL, userRowMapper, user.getId());
     }
 
     @Override
@@ -133,17 +127,17 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void addFriend(Long userId, Long friendId) {
+    public void addFriend(User user, User friend) {
         jdbcTemplate.update(
                 ADD_FRIEND_SQL,
-                userId,
-                friendId
+                user.getId(),
+                friend.getId()
         );
     }
 
     @Override
-    public void removeFriend(Long userId, Long friendId) {
-        jdbcTemplate.update(REMOVE_FRIEND_SQL, userId, friendId);
+    public void removeFriend(User user, User friend) {
+        jdbcTemplate.update(REMOVE_FRIEND_SQL, user.getId(), friend.getId());
     }
 
     @Override

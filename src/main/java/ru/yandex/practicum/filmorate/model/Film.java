@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.validation.MinDate;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Film.
@@ -45,7 +44,7 @@ public class Film {
     @PositiveOrZero
     private int likes;
 
-    private MpaRating mpaRating;
+    private MpaRating mpa;
 
     private Collection<Genre> genres;
 }

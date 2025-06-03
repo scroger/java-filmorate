@@ -1,20 +1,17 @@
 package ru.yandex.practicum.filmorate.storage.mapper;
 
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
-
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaRating;
 
 @Component
 public class FilmListRowMapper implements RowMapper<List<Film>> {
@@ -23,7 +20,7 @@ public class FilmListRowMapper implements RowMapper<List<Film>> {
     public List<Film> mapRow(ResultSet rs, int rowNum) throws SQLException {
         Map<Long, Film> films = new HashMap<>();
 
-        while (rs.next()) {
+        do {
             Long filmId = rs.getLong("id");
             Film film = films.get(filmId);
 
@@ -49,17 +46,17 @@ public class FilmListRowMapper implements RowMapper<List<Film>> {
                         .build());
             }
 
-            if (null == film.getMpaRating()) {
+            if (null == film.getMpa()) {
                 int mpaRatingId = rs.getInt("mpa_rating_id");
 
                 if (mpaRatingId > 0) {
-                    film.setMpaRating(MpaRating.builder()
+                    film.setMpa(MpaRating.builder()
                             .id(mpaRatingId)
                             .title(rs.getString("mpa_rating_title"))
                             .build());
                 }
             }
-        }
+        } while (rs.next());
 
         return films.values().stream().toList();
     }

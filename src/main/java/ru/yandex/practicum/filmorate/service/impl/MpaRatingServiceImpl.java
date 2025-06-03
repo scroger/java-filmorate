@@ -5,8 +5,9 @@ import java.util.Collection;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import ru.yandex.practicum.filmorate.dto.MpaRatingDTO;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.mapper.MpaRatingMapper;
 import ru.yandex.practicum.filmorate.service.MpaRatingService;
 import ru.yandex.practicum.filmorate.storage.MpaRatingStorage;
 
@@ -17,14 +18,14 @@ public class MpaRatingServiceImpl implements MpaRatingService {
     private final MpaRatingStorage mpaRatingStorage;
 
     @Override
-    public Collection<MpaRating> findAll() {
-        return mpaRatingStorage.findAll();
+    public Collection<MpaRatingDTO> findAll() {
+        return mpaRatingStorage.findAll().stream().map(MpaRatingMapper::map).toList();
     }
 
     @Override
-    public MpaRating findById(Integer id) {
-        return mpaRatingStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Mpa rating with id=%d not found", id)));
+    public MpaRatingDTO findById(Integer id) {
+        return MpaRatingMapper.map(mpaRatingStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Mpa rating with id=%d not found", id))));
     }
 
 }

@@ -1,10 +1,8 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
 import ru.yandex.practicum.filmorate.model.User;
+
+import java.util.Collection;
 
 public interface UserStorage {
 
@@ -20,13 +18,13 @@ public interface UserStorage {
 
     boolean checkLoginUnique(String login);
 
-    Collection<User> findFriends(Long id);
+    Collection<User> findFriends(User user);
 
     Collection<User> findCommonFriends(Long userId, Long otherId);
 
-    void addFriend(Long id, Long friendId);
+    void addFriend(User user, User friend);
 
-    void removeFriend(Long id, Long friendId);
+    void removeFriend(User user, User friend);
 
     void acceptFriendship(Long userId, Long friendId);
 

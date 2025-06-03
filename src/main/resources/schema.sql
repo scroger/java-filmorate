@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.films (
 	duration BIGINT,
 	mpa_rating_id INTEGER,
 	CONSTRAINT films_pk PRIMARY KEY (id),
-	CONSTRAINT fk_mpa_rating_id
+	CONSTRAINT fk_films_mpa_rating_id
     	FOREIGN KEY (mpa_rating_id)
     	REFERENCES public.mpa_ratings (id)
     	ON UPDATE RESTRICT
@@ -37,12 +37,12 @@ CREATE TABLE IF NOT EXISTS public.films (
 CREATE TABLE IF NOT EXISTS public.film_likes (
 	film_id BIGINT NOT NULL,
 	user_id BIGINT NOT NULL,
-	CONSTRAINT fk_film_id
+	CONSTRAINT fk_film_likes_film_id
     	FOREIGN KEY (film_id)
     	REFERENCES public.films (id)
     	ON UPDATE RESTRICT
     	ON DELETE RESTRICT,
-    CONSTRAINT fk_user_id
+    CONSTRAINT fk_film_likes_user_id
     	FOREIGN KEY (user_id)
     	REFERENCES public.users (id)
     	ON UPDATE RESTRICT
@@ -52,12 +52,12 @@ CREATE TABLE IF NOT EXISTS public.film_likes (
 CREATE TABLE IF NOT EXISTS public.film_genres (
 	film_id BIGINT NOT NULL,
 	genre_id BIGINT NOT NULL,
-	CONSTRAINT fk_film_id
+	CONSTRAINT fk_film_genres_film_id
     	FOREIGN KEY (film_id)
     	REFERENCES public.films (id)
     	ON UPDATE RESTRICT
     	ON DELETE RESTRICT,
-    CONSTRAINT fk_genre_id
+    CONSTRAINT fk_film_genres_genre_id
     	FOREIGN KEY (genre_id)
     	REFERENCES public.genres (id)
     	ON UPDATE RESTRICT
@@ -68,19 +68,19 @@ CREATE TABLE IF NOT EXISTS public.user_friends (
 	user_id BIGINT NOT NULL,
 	friend_id BIGINT NOT NULL,
 	status BOOLEAN default false NOT NULL,
-	CONSTRAINT fk_user_id
+	CONSTRAINT fk_user_friends_user_id
     	FOREIGN KEY (user_id)
     	REFERENCES public.users (id)
     	ON UPDATE RESTRICT
     	ON DELETE RESTRICT,
-    CONSTRAINT fk_friend_id
+    CONSTRAINT fk_user_friends_friend_id
     	FOREIGN KEY (friend_id)
     	REFERENCES public.users (id)
     	ON UPDATE RESTRICT
     	ON DELETE RESTRICT
 );
 
-INSERT INTO public.genres (id, title) VALUES
+MERGE INTO public.genres KEY (id, title) VALUES
     (1, 'Комедия'),
     (2, 'Драма'),
     (3, 'Мультфильм'),
@@ -88,7 +88,7 @@ INSERT INTO public.genres (id, title) VALUES
     (5, 'Документальный'),
     (6, 'Боевик');
 
-INSERT INTO public.mpa_ratings (id, title) VALUES
+MERGE INTO public.mpa_ratings KEY (id, title) VALUES
     (1, 'G'),
     (2, 'PG'),
     (3, 'PG-13'),

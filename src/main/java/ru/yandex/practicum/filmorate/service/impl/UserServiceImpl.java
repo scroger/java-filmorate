@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<User> findFriends(Long id) {
-        return userStorage.findFriends(id);
+        return userStorage.findFriends(findById(id));
     }
 
     @Override
@@ -86,14 +86,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void addFriend(Long id, Long friendId) {
-        userStorage.addFriend(id, friendId);
+        User user = findById(id);
+        User friend = findById(friendId);
+
+        userStorage.addFriend(user, friend);
 
         log.info("Users with id={} and id={} are now friends.", id, friendId);
     }
 
     @Override
     public void removeFriend(Long id, Long friendId) {
-        userStorage.removeFriend(id, friendId);
+        userStorage.removeFriend(findById(id), findById(friendId));
 
         log.info("Users with id={} and id={} are no longer friends.", id, friendId);
     }
