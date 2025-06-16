@@ -30,15 +30,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(User userRequest) {
-        userStorage.checkEmailUnique(userRequest.getEmail());
-        userStorage.checkLoginUnique(userRequest.getLogin());
+        if (!userStorage.checkEmailUnique(userRequest.getEmail())) {
+            throw new ValidationException(String.format("Email %s already in use", userRequest.getEmail()));
+        }
+        if (!userStorage.checkLoginUnique(userRequest.getLogin())) {
+            throw new ValidationException(String.format("Login %s already in use", userRequest.getLogin()));
+        }
 
         if (null == userRequest.getName() || userRequest.getName().isBlank()) {
             userRequest.setName(userRequest.getLogin());
         }
         userRequest.setId(generateId());
 
-        userStorage.save(userRequest);
+        userStorage.create(userRequest);
         log.info("User successfully created");
 
         return userRequest;
@@ -51,18 +55,20 @@ public class UserServiceImpl implements UserService {
         }
 
         User updateUser = userStorage.findById(userRequest.getId());
-        if (!updateUser.getEmail().equals(userRequest.getEmail())) {
-            userStorage.checkEmailUnique(userRequest.getEmail());
+        if (!updateUser.getEmail().equals(userRequest.getEmail())
+            && !userStorage.checkEmailUnique(userRequest.getEmail())) {
+            throw new ValidationException(String.format("Email %s already in use", userRequest.getEmail()));
         }
-        if (!updateUser.getLogin().equals(userRequest.getLogin())) {
-            userStorage.checkLoginUnique(userRequest.getLogin());
+        if (!updateUser.getLogin().equals(userRequest.getLogin())
+            && !userStorage.checkLoginUnique(userRequest.getLogin())) {
+            throw new ValidationException(String.format("Login %s already in use", userRequest.getLogin()));
         }
 
         if (null == userRequest.getName() || userRequest.getName().isBlank()) {
             userRequest.setName(userRequest.getLogin());
         }
 
-        userStorage.save(userRequest);
+        userStorage.update(userRequest);
         log.info("User successfully updated");
 
         return userRequest;
@@ -70,7 +76,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<User> findFriends(Long id) {
-        return userStorage.findFriends(id);
+        return userStorage.findFriends(findById(id));
     }
 
     @Override
@@ -80,14 +86,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void addFriend(Long id, Long friendId) {
-        userStorage.addFriend(id, friendId);
+        User user = findById(id);
+        User friend = findById(friendId);
+
+        userStorage.addFriend(user, friend);
 
         log.info("Users with id={} and id={} are now friends.", id, friendId);
     }
 
     @Override
     public void removeFriend(Long id, Long friendId) {
-        userStorage.removeFriend(id, friendId);
+        userStorage.removeFriend(findById(id), findById(friendId));
 
         log.info("Users with id={} and id={} are no longer friends.", id, friendId);
     }

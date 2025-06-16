@@ -1,18 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -31,28 +25,33 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void save(User user) {
+    public User create(User user) {
+        return save(user);
+    }
+
+    @Override
+    public User update(User user) {
+        return save(user);
+    }
+
+    private User save(User user) {
         users.put(user.getId(), user);
+
+        return user;
     }
 
     @Override
-    public void checkEmailUnique(String email) {
-        if (users.values().stream().anyMatch(user -> user.getEmail().equals(email))) {
-            throw new ValidationException(String.format("Email %s already in use", email));
-        }
+    public boolean checkEmailUnique(String email) {
+        return users.values().stream().noneMatch(user -> user.getEmail().equals(email));
     }
 
     @Override
-    public void checkLoginUnique(String login) {
-        if (users.values().stream().anyMatch(user -> user.getLogin().equals(login))) {
-            throw new ValidationException(String.format("Login %s already in use", login));
-        }
+    public boolean checkLoginUnique(String login) {
+        return users.values().stream().noneMatch(user -> user.getLogin().equals(login));
     }
 
     @Override
-    public Collection<User> findFriends(Long id) {
-        final User user = findById(id);
-
+    public Collection<User> findFriends(User user) {
         return users.values()
                 .stream()
                 .filter(u -> user.getFriendIds().contains(u.getId()))
@@ -75,26 +74,24 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void addFriend(Long id, Long friendId) {
-        final User user1 = findById(id);
-
-        if (!user1.getFriendIds().contains(friendId)) {
-            final User user2 = findById(friendId);
-
-            user1.getFriendIds().add(user2.getId());
-            user2.getFriendIds().add(user1.getId());
+    public void addFriend(User user, User friend) {
+        if (!user.getFriendIds().contains(friend.getId())) {
+            user.getFriendIds().add(friend.getId());
+            friend.getFriendIds().add(user.getId());
         }
     }
 
     @Override
-    public void removeFriend(Long id, Long friendId) {
-        final User user1 = findById(id);
-        final User user2 = findById(friendId);
-
-        if (user1.getFriendIds().contains(friendId)) {
-            user1.getFriendIds().remove(user2.getId());
-            user2.getFriendIds().remove(user1.getId());
+    public void removeFriend(User user, User friend) {
+        if (user.getFriendIds().contains(friend.getId())) {
+            user.getFriendIds().remove(friend.getId());
+            friend.getFriendIds().remove(user.getId());
         }
+    }
+
+    @Override
+    public void acceptFriendship(Long userId, Long friendId) {
+
     }
 
 }
